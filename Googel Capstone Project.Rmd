@@ -1,0 +1,417 @@
+---
+title: "Google Capstone Project"
+author: "SenaTheAnalyst"
+date: "2023-03-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+### Background 
+
+The director of marketing of a fictional Company Cyclistic believes the company’s future success
+depends on maximizing the number of annual memberships. The analytics team wants to understand how
+casual riders and annual members use Cyclistic bikes differently. From these insights, the marketing team will design
+a new marketing strategy to convert casual riders into annual members. Based on analysis, Cyclistic executives will
+approve recommendations, so they must be backed up with compelling data insights and professional
+data visualizations.
+
+**Key stakeholders**:\
+Lily Moreno: The director of marketing,\
+Cyclistic executive team and\
+Cyclistic marketing analytics team.
+
+
+**Cyclistic**: A bike-share program that features more than 5,800 bicycles and 600 docking stations.
+Cyclistic sets itself apart by also offering reclining bikes, hand tricycles, and cargo bikes, making bike-share more
+inclusive to people with disabilities and riders who can’t use a standard two-wheeled bike. The majority of
+riders opt for traditional bikes; about 8% of riders use the assistive options. Cyclistic users are more likely
+to ride for leisure, but about 30% use them to commute to work each day.
+
+### Project Goal:
+
+As a Junior Data Analysis, the goal is to determine how annual members and casual riders use
+Cyclistic bikes differently with the aim of converting casual riders into annual member.
+
+Based on insights from analysis, a new marketing strategy will be designed to convert casual riders to annual riders
+
+
+### Tools Used for this project.
+
+**Excel, SQL and R-Language**
+
+
+
+### Prepare Phase
+
+The data sets being used for the project are 12 months of trip data owned
+by Motivate International Inc who have granted a non-exclusive,
+royalty-free, limited, perpetual license to access, reproduce, analyze,
+copy, modify, distribute in product or service and use the Data for
+any lawful purpose ("License").
+
+There are no issues of bias or credibility with these data sets. They are
+Reliable, Original, Comprehensive, Current and Cited.
+
+Upon initial inspection of each of the 12 csv data sets using ISBLANK
+function in excel, i noticed that some of the observations are missing.
+This i will address subsequently using RStudio.
+
+
+
+## Installing packages
+
+```{r}
+r = getOption("repos")
+r["CRAN"] = "http://cran.us.r-project.org"
+options(repos = r)
+
+install.packages("tidyverse",repos = "http://cran.us.r-project.org")
+install.packages("janitor",repos = "http://cran.us.r-project.org")
+install.packages("lubridate",repos = "http://cran.us.r-project.org")
+install.packages("lifecycle",repos = "http://cran.us.r-project.org")
+install.packages("pillar",repos = "http://cran.us.r-project.org")
+install.packages("pillar") 
+install.packages("dplyr")
+
+```
+
+## Loading packages
+
+```{r}
+
+library("janitor")
+library("lubridate")
+library("ggplot2")
+library("readxl")
+library("dplyr")
+library("tidyverse")
+library("tidyr")
+
+```
+## Loading Datasets
+
+Loading the needed 12 csv data sets, 
+
+Read CSV files (Data of trips by Cyclistic riders)
+
+
+```{r}
+df1  <- read.csv("202201-divvy-tripdata.csv")
+df2  <- read.csv("202202-divvy-tripdata.csv")
+df3  <- read.csv("202203-divvy-tripdata.csv")
+df4  <- read.csv("202204-divvy-tripdata.csv")
+df5  <- read.csv("202205-divvy-tripdata.csv")
+df6  <- read.csv("202206-divvy-tripdata.csv")
+df7  <- read.csv("202207-divvy-tripdata.csv")
+df8  <- read.csv("202208-divvy-tripdata.csv")
+df9  <- read.csv("202209-divvy-tripdata.csv")
+df10 <- read.csv("202210-divvy-tripdata.csv")
+df11 <- read.csv("202211-divvy-tripdata.csv")
+df12 <- read.csv("202212-divvy-tripdata.csv")
+
+```
+
+## Binding all csv files to a common file for analysis
+
+```{r}
+
+bike_rides <- rbind(df1,df2,df3,df4,df5,df6,df7,df8,df9,df10,df11,df12)
+head(bike_rides)
+glimpse(bike_rides)
+
+
+```
+
+## Renaming some columns
+
+```{r}
+renamed_col <- bike_rides %>% 
+  rename(start_time = started_at, end_time = ended_at,user_status = member_casual
+         , bike_type = rideable_type)
+glimpse(renamed_col)
+head(renamed_col)
+
+```
+
+## Renaming some columns
+
+```{r}
+renamed_col <- bike_rides %>% 
+  rename(start_time = started_at, end_time = ended_at,user_status = member_casual
+         , bike_type = rideable_type)
+glimpse(renamed_col)
+head(renamed_col)
+
+```
+
+## Checking duration of trips(end time minus start time)
+
+```{r}
+trip_duration <-mutate(renamed_col, trip_duration = as.duration
+                            (interval(ymd_hms(renamed_col$start_time),
+                                      ymd_hms(renamed_col$end_time))))
+
+```
+
+## Adding another column to determine weekdays of the ride
+
+```{r}
+day_of_week <- trip_duration %>% mutate(day_of_week = weekdays(as.Date(start_time)))
+View(day_of_week)
+
+
+```
+
+# Checking some variables (Consistency) in the columns with unique()
+
+```{r}
+unique(day_of_week$user_status)
+unique(day_of_week$bike_type)
+
+```
+
+# checking and removing all (null) and (na) data for ease of data analysis
+
+```{r}
+is.null(day_of_week)
+clean_trip_data <-na.omit(day_of_week) 
+head(clean_trip_data)
+
+```
+
+## Analyzing data and Sharing results.
+
+
+```{r}
+
+
+user_status_count <-table(clean_trip_data$user_status)
+user_status_count
+pie(user_status_count)
+
+pie(user_status_count,
+    labels=as.character(user_status_count),
+    main="Type of bike riders",
+    col=c("blue","orange"),
+    border="black",
+    clockwise=TRUE
+)
+
+
+barplot(user_status_count,
+        main="Type of bike riders",
+        xlab="Bike riders",
+        ylab="Count",
+        border="blue",
+        col="blue",
+        density=20
+ ) 
+
+```
+
+## From the above graphs it can conclude that the number of members (3344996) are more than casual riders (2316863)
+
+
+
+# Now the average ride duration for both groups is determined
+
+```{r}
+avg_trip_duration <- clean_trip_data %>% 
+  group_by(user_status) %>% 
+  summarize(avg = mean(trip_duration)/60)
+avg_trip_duration
+
+View(clean_trip_data)
+
+```
+
+## On an average, casual riders ride longer (22 mins) than members (12.4 mins)
+
+
+
+## Next determine day of the week when majority of rides are taken based on user status 
+
+```{r}
+day_of_ride <- clean_trip_data %>% 
+  group_by(day_of_week , user_status) %>% 
+  select(user_status, day_of_week)  %>% 
+  summarize(number = table(day_of_week))
+
+View(day_of_ride)
+
+```
+
+## In order to make the necessary extractions from and groupings, the table is exported to SQL.
+
+## The command write.csv()  is used to create a data frame to be exported to SQL
+
+```{r}
+write.csv(day_of_ride, "day_of_week.csv")
+```
+
+
+## Import queried data for further analysis
+
+**getwd()** : Is used to get the current working directory
+
+casual_ride <- read.csv("C:/Users/SENANU/Documents/temp/Cyclistic_Analysis/Cyclsitic_Analysis/casual.csv")
+
+member_ride <-read.csv("C:/Users/SENANU/Documents/temp/Cyclistic_Analysis/Cyclsitic_Analysis/members.csv")
+
+
+
+```{r}
+getwd() 
+
+casual_ride <- read.csv("C:/Users/SENANU/Documents/temp/Cyclistic_Analysis/Cyclsitic_Analysis/casual.csv")
+
+member_ride <-read.csv("C:/Users/SENANU/Documents/temp/Cyclistic_Analysis/Cyclsitic_Analysis/members.csv")
+
+
+```
+
+## Now sorting of imported data
+## First casual riders
+
+```{r}
+sort_casual_ride <- casual_ride %>% 
+  arrange(desc(number)) 
+
+sort_casual_ride
+
+```
+
+## Next members riders
+
+```{r}
+
+sort_member_ride <- member_ride %>% 
+  arrange(desc(number)) 
+
+sort_member_ride
+
+```
+
+## The values are plotted to get a clearer picture of casual riders
+
+```{r}
+ggplot(data = sort_casual_ride, aes(x=day_of_week, y=number, color =day_of_week, fill= day_of_week)) 
+  labs(title = 'Number of Casual Riders vs Days of the week', 
+       caption = 'Analysis by SenaTheAnalyst')+ 
+  geom_bar(stat = "identity")+ theme(legend.position ="none")
+
+
+
+ggplot(data = sort_member_ride, aes(x=day_of_week, y=number, color =day_of_week, fill= day_of_week)) + 
+  labs(title = 'Number of Member Riders vs Days of the week', 
+       caption = 'Analysis by SenaTheAnalyst')+ 
+  geom_bar(stat = "identity")+theme(legend.position="none")
+
+
+```
+
+### From the above graph, it is evident that majority of the casual riders, close to 60%, prefer riding over the weekend, Fridays, Saturdays and Sundays as against the member/registered riders that are almost evenly distributed across the weeks.
+## About 60% of casual trips take place over the weekend.  
+
+
+
+
+
+### To find out how the ridership varies by month based on user types, data is exported to SQL to make necessary extractions
+### First the date format has to be chnaged to make t workable
+
+```{r}
+clean_trip_data$month_of_ride <- format(as.Date(clean_trip_data$end_time),"%m")
+
+View(clean_trip_data)
+
+
+```
+
+### Converting numeric months to month_names
+
+```{r}
+
+clean_trip_data$name_of_months <- month.name[as.numeric(clean_trip_data$month_of_ride)]
+View(clean_trip_data)
+
+```
+
+### Now finding out ridership by month
+
+```{r}
+ride_month <- clean_trip_data %>% 
+  group_by(name_of_months,user_status) %>% 
+  select(user_status,name_of_months) %>% 
+  summarise(number= table(name_of_months))
+ride_month
+
+```
+
+### Data is exported to SQL for analysis by first converting to csv file
+
+```{r}
+write.csv(ride_month, "ride_month.csv")
+```
+
+### Read data form SQL analysis
+
+```{r}
+casual_month_ride <- read.csv("C:/Users/SENANU/Documents/temp/Cyclistic_Analysis/Cyclsitic_Analysis/casual_month_of _year.csv")
+
+member_month_ride <-read.csv("C:/Users/SENANU/Documents/temp/Cyclistic_Analysis/Cyclsitic_Analysis/members_month_of_year.csv")
+
+casual_month_ride
+
+member_month_ride
+
+```
+
+### The values are plotted to get a clearer picture of casual riders
+
+
+```{r}
+
+ggplot(data = casual_month_ride, aes(x=name_of_months, y=number, color =name_of_months, fill= name_of_months)) + 
+  labs(title = 'Casul rides by the months of the year', 
+       caption = 'Analysis by SenaTheAnalyst')+ 
+  geom_bar(stat = "identity")+ theme(legend.position ="none")
+
+
+
+ggplot(data = member_month_ride, aes(x=name_of_months, y=number, color =name_of_months, fill= name_of_months)) + 
+  labs(title = 'Number of Member Riders vs Days of the week', 
+       caption = 'Analysis by SenaTheAnalyst')+ 
+  geom_bar(stat = "identity")+theme(legend.position="none")
+
+
+```
+
+### From the above graphs, it is evident that casual riders are mostly active from May to September which represents the end of spring to summer season.
+
+
+
+
+
+## Highlights of analysis
+
+* Casual riders ride an average of 22.0 minutes while members ride 12.4 on an average.
+* There are more member riders (3344996) than casual riders(2316863).
+* Casual rides bike usage turns to increase towards the end of the week (Thursday, Friday, Saturday & Sunday) and peaking on Saturdays.
+* Members usage turns to be almost constant through the week but a slight increase between Tuesday to Thursday.
+* Casual riders turn to purchase Cyclistic bikes during the summer months (June, July,August,September)
+* Member riders also use bikes during the summer and ridership falls during the winter periods.
+
+
+
+> Recommendations in order to convert casual riders to member riders.
+
+1. Offer discounted packages for casual rides that  last longer that 20 minutes during the weekend.
+2. Launch a weekend ride to win promotion for riders by duration of ride.
+3. Offer membership exclusive incentives/packages for weekend rides.  
+4. Offer discounted special summer packages to casual riders.  
+ 
+
+
